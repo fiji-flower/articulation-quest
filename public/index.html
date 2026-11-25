@@ -295,9 +295,9 @@ function ratingHTML(key,label){return `<label>${label}</label><div class="rating
 function bindRatings(){document.querySelectorAll(".rating").forEach(g=>g.querySelectorAll("button").forEach(b=>b.onclick=()=>{session.ratings[g.dataset.rating]=+b.dataset.score;renderSession()}))}
 function bindSpeak(){document.querySelectorAll(".speakBtn").forEach(b=>b.onclick=()=>{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.speak);u.rate=.82;u.volume=state.settings.volume;speechSynthesis.speak(u)})}
 function bindBeat(){
+ document.querySelectorAll(".diffBtn").forEach(b=>b.onclick=()=>{state.difficulty=b.dataset.diff;save();renderSession()})
  const btn=document.getElementById("beatBtn");if(!btn)return;
  btn.onclick=()=>{clearInterval(beatId);let i=0,beats=[...document.querySelectorAll(".beat")];beats.forEach(x=>x.classList.remove("active"));beats[0].classList.add("active");beatId=setInterval(()=>{beats.forEach(x=>x.classList.remove("active"));i=(i+1)%beats.length;beats[i].classList.add("active")},650)}
- document.querySelectorAll(".diffBtn").forEach(b=>b.onclick=()=>{state.difficulty=b.dataset.diff;save();renderSession()})
 }
 function startTimer(total){
  const el=document.getElementById("timer"); let left=total; document.getElementById("startTimer").disabled=true;
