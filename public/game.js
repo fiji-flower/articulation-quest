@@ -969,6 +969,7 @@ function completeDay(){
 }
 function stopAll(){clearInterval(timerId);timerId=null;timerLeft=null;timerRunning=false;clearInterval(beatId);speechSynthesis.cancel();if(mediaRecorder?.state==="recording")mediaRecorder.stop()}
 function applySettings(){
+ document.documentElement.dataset.reducedMotion=String(state.settings.reducedMotion);
  document.documentElement.style.setProperty("--font",state.settings.font+"px");
  if(state.settings.contrast==="high"){document.documentElement.style.setProperty("--muted","#e9ebff");document.documentElement.style.setProperty("--border","rgba(255,255,255,.28)")}else{document.documentElement.style.setProperty("--muted","#b9bfd9");document.documentElement.style.setProperty("--border","rgba(255,255,255,.1)")}
  document.documentElement.style.scrollBehavior=state.settings.reducedMotion?"auto":"smooth";
