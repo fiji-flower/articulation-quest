@@ -35,7 +35,7 @@ h2{font-size:1.35rem} h3{font-size:1rem;color:var(--accent2);text-transform:uppe
 .day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 .day{aspect-ratio:1;border-radius:18px;background:var(--panel);color:var(--text);border:1px solid var(--border);padding:5px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative}
 .day small{color:var(--muted);font-size:.68rem;text-align:center;line-height:1.1}.day.locked{opacity:.58}.day.done{background:linear-gradient(145deg,rgba(112,225,170,.25),rgba(85,216,255,.13));border-color:rgba(112,225,170,.45)}
-.day.current{box-shadow:0 0 0 2px var(--accent2) inset}.day b{font-size:1.1rem}
+.day.current{box-shadow:0 0 0 2px var(--accent2) inset}.day b{font-size:1.1rem}.day.partial{border-style:dashed;border-color:var(--accent2);background:rgba(85,216,255,.1)}.stage-badge{position:absolute;top:3px;right:3px;padding:2px 4px;border-radius:8px;background:var(--accent2);color:#0f1020;font-size:.58rem;font-weight:800;line-height:1;letter-spacing:.02em}
 .card{padding:18px;margin:14px 0}.section-list{display:grid;gap:10px}
 .section-item{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:17px;padding:14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
 .section-item strong{display:block}.section-item small{color:var(--muted)}

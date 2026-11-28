@@ -794,7 +794,7 @@ const topics = [
 const regions = ["Mouth Mechanics Workshop","Sound Forge","Rhythm Path","Confidence Stage"];
 
 let state = JSON.parse(localStorage.getItem("aqState")||"null") || {
-  onboarded:false,name:"Traveler",difficulty:"Calm",xp:0,streak:0,completed:[],ratings:{},recordings:{},showRomaji:false,
+  onboarded:false,name:"Traveler",difficulty:"Calm",xp:0,streak:0,completed:[],ratings:{},recordings:{},showRomaji:false,dayStep:{},
   settings:{font:16,volume:1,reducedMotion:false,contrast:"standard"},lastPlayed:null
 };
 let currentView="home", session=null, timerId=null, timerLeft=null, timerRunning=false, beatId=null, mediaRecorder=null, chunks=[], currentAudioURL=null;
@@ -832,8 +832,9 @@ function homeHTML(){
    <div class="region-title"><div><h3>Region ${ri+1}</h3><h2>${r}</h2></div><span class="pill">${state.completed.filter(d=>d>start&&d<=start+7).length}/7</span></div>
    <div class="day-grid">${topics.slice(start,start+7).map((t,i)=>{
     const day=start+i+1, done=state.completed.includes(day), current=day===Math.min(28,state.completed.length+1);
-    return `<button class="day ${done?'done':''} ${current?'current':''}" data-day="${day}">
-      <b>${day}</b><small>${t}</small>
+    const resume=!done&&state.dayStep&&state.dayStep[day]>0?Math.min(state.dayStep[day]+1,6):0;
+    return `<button class="day ${done?'done':''} ${current?'current':''} ${resume?'partial':''}" data-day="${day}"${resume?` title="Resume at stage ${resume} of 6" aria-label="Day ${day}, in progress, resume at stage ${resume} of 6"`:''}>
+      <b>${day}</b><small>${t}</small>${resume?`<span class="stage-badge">${resume}/6</span>`:''}
     </button>`
    }).join("")}</div>
   </section>`
@@ -869,8 +870,22 @@ function bind(){
  const rb=document.getElementById("resetBtn"); if(rb) rb.onclick=()=>{if(confirm("Reset all Articulation Quest progress?")){localStorage.removeItem("aqState");location.reload()}};
 }
 function openDay(day){
- session={day,step:0,ratings:{clarity:3,comfort:3,difficulty:3,confidence:3}};
+ state.dayStep=state.dayStep||{};
+ const resume=state.completed.includes(day)?0:Math.min(state.dayStep[day]||0,5);
+ session={day,step:resume,ratings:{clarity:3,comfort:3,difficulty:3,confidence:3}};
  clearInterval(timerId);timerId=null;timerLeft=null;timerRunning=false;
+ renderSession();
+}
+function rememberStep(){
+ if(!session) return;
+ state.dayStep=state.dayStep||{};
+ if(session.step>0&&!state.completed.includes(session.day)) state.dayStep[session.day]=session.step;
+ else delete state.dayStep[session.day];
+ save();
+}
+function goToStep(step){
+ stopAll();
+ session.step=Math.max(0,Math.min(step,5));
  renderSession();
 }
 const steps=[
@@ -885,13 +900,14 @@ function renderSession(){
   <section class="card"><h3>Stage ${session.step+1} of 6</h3><h2>${name}</h2>${stepContent(c)}
    <div class="row" style="margin-top:18px">
     <button class="secondary" id="exitSession">Exit</button>
-    ${session.step<5?`<button class="primary" id="startTimer">Start ${Math.ceil(seconds/60)}-minute stage</button>`:`<button class="primary" id="completeDay">Complete Day</button>`}
+    ${session.step<5?`<button class="primary" id="startTimer">Start ${Math.ceil(seconds/60)}-minute stage</button><button class="secondary" id="nextStage">Next stage ›</button>`:`<button class="primary" id="completeDay">Complete Day</button>`}
    </div>
   </section>`;
  document.getElementById("exitSession").onclick=()=>{stopAll();currentView="home";render()};
  const st=document.getElementById("startTimer");if(st) st.onclick=()=>startTimer(seconds);
+ const ns=document.getElementById("nextStage");if(ns) ns.onclick=()=>goToStep(session.step+1);
  const cd=document.getElementById("completeDay");if(cd) cd.onclick=completeDay;
- bindRecorder();bindRatings();bindSpeak();bindBeat();bindRomaji();restoreTimer();
+ bindRecorder();bindRatings();bindSpeak();bindBeat();bindRomaji();restoreTimer();rememberStep();
 }
 function stepContent(c){
  switch(session.step){
@@ -920,6 +936,7 @@ function startTimer(total){
  clearInterval(timerId); timerId=setInterval(tickTimer,1000)
 }
 function tickTimer(){
+ if(timerLeft==null) return;
  timerLeft--;
  const el=document.getElementById("timer"); if(el) el.textContent=formatTime(timerLeft);
  if(timerLeft<=0){clearInterval(timerId);timerId=null;timerRunning=false;timerLeft=null;navigator.vibrate?.(120);session.step++;renderSession()}
@@ -945,6 +962,7 @@ async function bindRecorder(){
 function completeDay(){
  const d=session.day;
  if(!state.completed.includes(d)){state.completed.push(d);state.xp+=100;state.streak+=1}
+ if(state.dayStep) delete state.dayStep[d];
  state.ratings[d]=session.ratings;state.lastPlayed=new Date().toISOString();save();stopAll();
  document.getElementById("view").innerHTML=`<section class="hero"><h3>Day ${d} restored</h3><h1>+100 XP</h1><p>${dayContent[d].feedback}</p><div class="row"><button class="primary" id="returnMap">Return to map</button></div></section>`;
  document.getElementById("returnMap").onclick=()=>{currentView="home";render()}
